@@ -8,10 +8,11 @@ public class Blink_Bar : MonoBehaviour {
     public GameObject _Blink;
     public int count;
     public GameObject _bot;
-
+    private GameObject palyer;
     
 	// Use this for initialization
 	void Start () {
+        palyer = GameObject.FindGameObjectWithTag("Player");
         slider = GetComponent<Slider>();
         slider.value = 0;
         _Blink = GameObject.Find("Blink");
@@ -24,6 +25,7 @@ public class Blink_Bar : MonoBehaviour {
         slider.value = slider.value + Time.deltaTime;
         if(slider.value == 8)   //Refresh bar value and Play Animation
         {
+            palyer.GetComponent<Eye>().blink = true;
             _Blink.GetComponent<Animator>().Play("blink");
             slider.value = 0;
         }
