@@ -23,11 +23,12 @@ public class basic_zombie : MonoBehaviour {
     private float ti_changepath;
     public GameObject[] switching;
     private bool startrun;
-    [SerializeField]
-    private bool ping;
+    private GameObject burn_zom_sound;
+    
     [SerializeField]
     private Transform going_spot;
     private bool player_founded;
+    private GameObject hit_sound;
 	// Use this for initialization
 	void Start () {
         nav = GetComponent<UnityEngine.AI.NavMeshAgent>();
@@ -37,12 +38,15 @@ public class basic_zombie : MonoBehaviour {
         hp = 5;
         ti = 0;
         Invoke("swii",5);
-	}
+        burn_zom_sound = GameObject.Find("burn_zomebie_sound");
+        hit_sound = GameObject.Find("Hitted");
+    }
 	
 	// Update is called once per frame
 	void Update () {
         if (lighting)
-        {
+        {if (burn_zom_sound.GetComponent<AudioSource>().isPlaying==false)
+            burn_zom_sound.GetComponent<AudioSource>().Play();
             ti = ti + Time.deltaTime;
             if (ti > 5)
             {
@@ -55,6 +59,7 @@ public class basic_zombie : MonoBehaviour {
         }
         else
         {
+            burn_zom_sound.GetComponent<AudioSource>().Stop();
             ti = 0;
             par_group.SetActive(false);
         }
@@ -79,7 +84,7 @@ public class basic_zombie : MonoBehaviour {
         }
         else
         {
-            if (nav.enabled == true && startrun&&player_founded==false && ping == false)
+            if (nav.enabled == true && startrun && player_founded == false )
             {
                 ti_changepath += Time.deltaTime;
                 if (ti_changepath > 9)
@@ -103,7 +108,7 @@ public class basic_zombie : MonoBehaviour {
                 }
                
             }
-            else if (player_founded&&nav.enabled==true&&ping)
+            else if (player_founded && nav.enabled == true )
             {
                 nav.SetDestination(player.transform.position);
             }
@@ -127,13 +132,18 @@ public class basic_zombie : MonoBehaviour {
                 }
                 else
                 {
-                    player_founded = false;
+                    //player_founded = false;
                     nav.speed = 5;
                     ani.SetBool("run", false);
                 }
                 if (Vector3.Distance(transform.position, player.transform.position) < 2)
                 {
                     ani.SetBool("atk", true);
+                    if(hit_sound.GetComponent<AudioSource>().isPlaying == false)
+                    {
+                        hit_sound.GetComponent<AudioSource>().Play();
+                    }
+                    
                     if (hitting == false)
                     {
                         StartCoroutine(Hit());
@@ -148,7 +158,7 @@ public class basic_zombie : MonoBehaviour {
             }
         }
     }
-    void OnCollisionEnter(Collision col)
+    /*void OnCollisionEnter(Collision col)
     {
         if (col.transform.tag == "bullet")
         {   
@@ -157,7 +167,7 @@ public class basic_zombie : MonoBehaviour {
             print(hp);
             Instantiate(blood, col.transform.position, Quaternion.identity);
         }
-    }
+    }*/
     void OnTriggerStay(Collider other)
     {
         if(other.transform.tag == "ColliderDoor")
@@ -171,7 +181,7 @@ public class basic_zombie : MonoBehaviour {
         if (other.transform.tag == "Player")
         {
           //  print("twawe");
-            ping = true;
+            //ping = true;
         }
     }
     IEnumerator Wait(Transform t)
@@ -187,20 +197,20 @@ public class basic_zombie : MonoBehaviour {
         nav.enabled = false;
         int a = Random.Range(0, 10);
         transform.position = warp_spot[a].position;
+
         yield return new WaitForSeconds(3);
         //Debug.Log("After Waiting 2 Seconds");
+        player_founded = false;
         nav.enabled = true;
       //  t_other.GetComponentInParent<Open_door>().animator.SetBool("open", true);
     }
     IEnumerator Hit()
     {
-        player.GetComponent<Eye>().hitpoint -= 20;
+        player.GetComponent<Eye>().hitpoint -= 10;
         ani.SetBool("atk", true);
         red_sc.GetComponent<Animator>().Play("red_active");
         yield return new WaitForSeconds(3);
-        //Debug.Log("After Waiting 2 Seconds");
         hitting = false;
-        //  t_other.GetComponentInParent<Open_door>().animator.SetBool("open", true);
     }
     private void OnTriggerEnter(Collider other)
     {
@@ -210,9 +220,9 @@ public class basic_zombie : MonoBehaviour {
     {
         if (other.transform.tag == "Player")
         {
-            ping = false;
-            if (startrun && going_spot != null)
-                nav.SetDestination(going_spot.transform.position);
+            //ping = false;
+            player_founded = false;
+       
         }
     }
     void swii()

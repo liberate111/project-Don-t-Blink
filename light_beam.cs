@@ -12,7 +12,7 @@ public class light_beam : MonoBehaviour {
     private GameObject lightbeam;
 	// Use this for initialization
 	void Start () {
-        value_beam = 10;
+        value_beam = 30;
         l = GetComponent<Light>();
         bot = GameObject.FindGameObjectWithTag("Enemy");
         lightbeam = GameObject.Find("lightbeam_bar");
@@ -24,10 +24,11 @@ public class light_beam : MonoBehaviour {
         {
             k = false;
         }
+
         _value_beam = Mathf.RoundToInt(value_beam);
         lightbeam.GetComponent<Text>().text = "BATTERY  " + _value_beam;
 
-        if (k)
+        if(k)
         {
             value_beam -= Time.deltaTime;
             l.intensity = Mathf.Lerp(l.intensity, 7,1f* Time.deltaTime);
@@ -37,13 +38,11 @@ public class light_beam : MonoBehaviour {
         {
             bot.GetComponent<basic_zombie>().lighting = false;
         }
-        if (Input.GetKeyDown(KeyCode.Q))
+        if (Input.GetKeyDown(KeyCode.Q) || Input.GetAxis("TRI") == 1)
         {
             k = true;
-        //    l.intensity = Mathf.Clamp( Time.deltaTime,1, 7); ;
-           // l.spotAngle = 30;
         }
-        else if (Input.GetKeyUp(KeyCode.Q))
+        else if (Input.GetKey(KeyCode.Q) != true && Input.GetAxis("TRI") == 0)
         {
             k = false;
             l.intensity = 1;
