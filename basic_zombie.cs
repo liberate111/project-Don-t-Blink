@@ -1,19 +1,24 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityStandardAssets.Characters.FirstPerson;
+
 
 public class basic_zombie : MonoBehaviour {
     public UnityEngine.AI.NavMeshAgent nav;
+    int oldMask ;
     [SerializeField]
     private GameObject player;
     private int hp;
     private RaycastHit Ray;
+    [SerializeField]
     private Animator ani;
     public GameObject blood;
     public Transform t_other;
     public GameObject boxeye;
     public bool founded;
     public bool warp;
+    private int Eclick;
     public Transform[] warp_spot;
     public GameObject par_group;
     public bool lighting;
@@ -23,14 +28,23 @@ public class basic_zombie : MonoBehaviour {
     private float ti_changepath;
     public GameObject[] switching;
     private bool startrun;
+    [SerializeField]
     private GameObject burn_zom_sound;
-    
+    public Transform eye1;
+    public Transform eye2;
     [SerializeField]
     private Transform going_spot;
     private bool player_founded;
     private GameObject hit_sound;
+    public bool s;
+    private bool ss;
+    private bool sound_scarejump;
+    private GameObject E_img;
+    public bool blinking;
 	// Use this for initialization
 	void Start () {
+        oldMask = Camera.main.cullingMask;
+        Eclick = 0;
         nav = GetComponent<UnityEngine.AI.NavMeshAgent>();
         player = GameObject.FindGameObjectWithTag("Player");
         red_sc = GameObject.Find("red_hurt").transform;
@@ -38,12 +52,52 @@ public class basic_zombie : MonoBehaviour {
         hp = 5;
         ti = 0;
         Invoke("swii",5);
-        burn_zom_sound = GameObject.Find("burn_zomebie_sound");
+        E_img = GameObject.Find("Eimage");
         hit_sound = GameObject.Find("Hitted");
     }
 	
 	// Update is called once per frame
 	void Update () {
+        if (s)
+        {
+            Camera.main.cullingMask = (1 << LayerMask.NameToLayer("UI")) | (1 << LayerMask.NameToLayer("monster"));
+            Camera.main.transform.parent = this.transform;
+            Camera.main.transform.localPosition = eye1.localPosition;
+            E_img.SetActive(true);
+            //  Camera.main.transform.localRotation = Quaternion.Euler(Vector3.zero
+            GetComponent<Animator>().speed=0.08f;
+            StartCoroutine(stopAni());
+            Camera.main.transform.LookAt(eye2.localPosition-Camera.main.transform.localPosition); 
+            player.GetComponent<FirstPersonController>().enabled = false;
+            if (hit_sound.GetComponent<AudioSource>().isPlaying == false && sound_scarejump == false)
+            {
+                hit_sound.GetComponent<AudioSource>().Play();
+                sound_scarejump = true;
+            }
+            if (Input.GetKeyDown(KeyCode.E))
+            {
+                Eclick++;
+                if (Eclick == 15)
+                {
+                    Camera.main.transform.parent = player.transform;
+                    s = false;
+                    StartCoroutine(Warp());
+                    Eclick = 0;
+                    score_sc.score += 100;
+                    player.GetComponent<Eye>().after_release();
+                }
+              
+            }
+        }
+        else
+        {
+            sound_scarejump = false;
+            Camera.main.cullingMask = oldMask;
+            E_img.SetActive(false);
+            Camera.main.transform.parent = player.transform;
+            player.GetComponent<FirstPersonController>().enabled = true;
+            GetComponent<Animator>().speed = 1f;
+        }
         if (lighting)
         {if (burn_zom_sound.GetComponent<AudioSource>().isPlaying==false)
             burn_zom_sound.GetComponent<AudioSource>().Play();
@@ -74,6 +128,7 @@ public class basic_zombie : MonoBehaviour {
         }
         else
         {
+            if(s==false)
             ani.speed = 1;
         }
         if (hp <= 0)
@@ -114,7 +169,7 @@ public class basic_zombie : MonoBehaviour {
             }
         
         }
-        if (ani.GetBool("atk") ==true||hitting)
+        if (ani.GetBool("atk") == true || hitting)
         {
             ani.SetBool("run", false);
         }
@@ -126,30 +181,35 @@ public class basic_zombie : MonoBehaviour {
             {
                 if (Ray.transform.tag == "Player")
                 {
-                    nav.speed = 7;
+                    nav.speed = 8;
                     player_founded = true;
-                    ani.SetBool("run", true);
+                    if (s == false)
+                    {
+                        ani.SetBool("run", true);
+
+                    }
+                    else
+                    {
+
+                    }
                 }
                 else
                 {
-                    //player_founded = false;
-                    nav.speed = 5;
+                    player_founded = false;
+                    if (blinking == false)
+                    {
+                        nav.speed = 5;
+                    }
                     ani.SetBool("run", false);
                 }
                 if (Vector3.Distance(transform.position, player.transform.position) < 2)
                 {
-                    ani.SetBool("atk", true);
-                    if(hit_sound.GetComponent<AudioSource>().isPlaying == false)
-                    {
-                        hit_sound.GetComponent<AudioSource>().Play();
-                    }
-                    
+                    ani.SetBool("atk", true);    
                     if (hitting == false)
                     {
                         StartCoroutine(Hit());
                         hitting = true;
                     }
-                  
                 }
                 else
                 {
@@ -197,7 +257,6 @@ public class basic_zombie : MonoBehaviour {
         nav.enabled = false;
         int a = Random.Range(0, 10);
         transform.position = warp_spot[a].position;
-
         yield return new WaitForSeconds(3);
         //Debug.Log("After Waiting 2 Seconds");
         player_founded = false;
@@ -206,11 +265,18 @@ public class basic_zombie : MonoBehaviour {
     }
     IEnumerator Hit()
     {
-        player.GetComponent<Eye>().hitpoint -= 10;
+        player.GetComponent<Eye>().hitpoint -= level_game.atk;
+        s = true;
         ani.SetBool("atk", true);
         red_sc.GetComponent<Animator>().Play("red_active");
-        yield return new WaitForSeconds(3);
+        yield return new WaitForSeconds(0.5f);
         hitting = false;
+    }
+    IEnumerator stopAni()
+    {
+       
+        yield return new WaitForSeconds(1.5f);
+        GetComponent<Animator>().speed = 0.05f;
     }
     private void OnTriggerEnter(Collider other)
     {

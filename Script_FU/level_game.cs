@@ -14,6 +14,7 @@ public class level_game : MonoBehaviour {
         _easy = GameObject.Find("Checkmark_Easy");
         _medium = GameObject.Find("Checkmark_Medium");
         _hard = GameObject.Find("Checkmark_Hard");
+        atk = 5;
     }
 	
 	// Update is called once per frame
@@ -23,7 +24,7 @@ public class level_game : MonoBehaviour {
 	}
     public void easy()
     {
-        atk = 1;
+        atk = 5;
 
         _easy.GetComponent<Image>().enabled = true;
         _medium.GetComponent<Image>().enabled = false;
@@ -31,7 +32,7 @@ public class level_game : MonoBehaviour {
     }
     public void medium()
     {
-        atk = 2;
+        atk = 10;
 
         _easy.GetComponent<Image>().enabled = false;
         _medium.GetComponent<Image>().enabled = true;
@@ -39,7 +40,7 @@ public class level_game : MonoBehaviour {
     }
     public void hard()
     {
-        atk = 3;
+        atk = 15;
 
         _easy.GetComponent<Image>().enabled = false;
         _medium.GetComponent<Image>().enabled = false;

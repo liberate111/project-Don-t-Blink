@@ -24,6 +24,7 @@ public class Eye : MonoBehaviour {
     public Transform cam1;
     public Transform cam2;
     public Transform main_cam;
+    public GameObject zom;
     // Use this for initialization
     void Start () { 
         obj = GameObject.Find("Blink");
@@ -34,6 +35,7 @@ public class Eye : MonoBehaviour {
         hitpoint = 100;
         hp = GameObject.Find("Hp").GetComponent<Text>();
         _switch = GameObject.Find("Switch_sound");
+        zom = GameObject.FindGameObjectWithTag("Enemy");
           
 	}
     /*
@@ -70,11 +72,11 @@ public class Eye : MonoBehaviour {
         {
             if (ray.transform.gameObject.tag == "Enemy" && bot.GetComponent<Renderer>().isVisible == true)      //See the Enemy
             {
-                if (eye_close == false)
+                if (eye_close == false && bot.GetComponentInParent<basic_zombie>().s==false)
                 {
                     bot.GetComponentInParent<basic_zombie>().founded = true;
                 }
-                else
+                else 
                 {
                     bot.GetComponentInParent<basic_zombie>().founded = false;
                 }
@@ -86,6 +88,7 @@ public class Eye : MonoBehaviour {
                 {
                     Destroy(ray.transform.gameObject);
                     GetComponentInChildren<light_beam>().value_beam += 10;
+                    score_sc.score += 50;
                 }
             }
             else if (ray.transform.tag == "medic")
@@ -94,6 +97,7 @@ public class Eye : MonoBehaviour {
                 {
                     Destroy(ray.transform.gameObject);
                     hitpoint = 100;
+                    score_sc.score += 50;
                 }
             }
             else
@@ -130,9 +134,17 @@ public class Eye : MonoBehaviour {
     {
         //Debug.Log("Before Waiting 2 seconds");
         eye_close = true;
+        zom.GetComponent<basic_zombie>().nav.speed = 20;
+        zom.GetComponent<basic_zombie>().blinking = true;
         yield return new WaitForSeconds(1);
+        //zom.GetComponent<basic_zombie>().nav.speed = 8;
         eye_close = false;
+        zom.GetComponent<basic_zombie>().blinking = false;
         //Debug.Log("After Waiting 2 Seconds");
-       
+
+    }
+    public void after_release()
+    {
+        ani.Play("blink");
     }
 }
